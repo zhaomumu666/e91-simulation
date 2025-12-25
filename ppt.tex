@@ -1,0 +1,480 @@
+\documentclass[10pt]{beamer}
+\usetheme{metropolis}
+\usepackage{graphicx}  % 插入图片的核心宏包，必须加！
+\usepackage{amsmath}
+\usepackage{booktabs}
+\usepackage{physics}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{quantikz}
+\usepackage{wasysym} % 提供\yes（勾）和\no（叉）命令
+
+
+
+% 设置颜色
+\definecolor{SUSTechBlue}{RGB}{0, 82, 155}
+\setbeamercolor{structure}{fg=SUSTechBlue}
+
+% 标题信息
+\title{E91 Quantum Cryptography Protocol}
+\subtitle{A Simulation Study Based on Bell's Theorem}
+\author{Zhao Yumu}
+\institute{School of Physical Science and Technology \\ ShanghaiTech University}
+\date{24/12/2025}
+\titlegraphic{\includegraphics[width=2cm]{ShanghaiTech_logo.png}}
+
+\begin{document}
+
+% ============ 标题页 ============
+\begin{frame}
+    \titlepage
+\end{frame}
+
+% ============ 目录 ============
+\begin{frame}{Presentation Outline}
+    \tableofcontents
+\end{frame}
+
+% ============ 第一部分：背景介绍 ============
+\section{Background \& Motivation}
+
+\begin{frame}{The Challenge in Classical Cryptography}
+    \begin{itemize}
+        \item \textbf{Key Distribution Problem}: How to securely share secret keys?
+        \item Classical channels can be passively monitored
+        \item Mathematical security ≠ Physical security
+        \item Need for \alert{information-theoretically secure} protocols
+    \end{itemize}
+    
+    \vspace{5mm}
+    \begin{block}{Quantum Solution}:Quantum mechanics provides fundamentally new security guarantees
+    \end{block}
+\end{frame}
+
+\begin{frame}{Bell's Theorem \& Quantum Nonlocality}
+    \begin{columns}
+        \begin{column}{0.5\textwidth}
+            \begin{itemize}
+                \item Bell's inequality (1964)
+                \item Tests local hidden variable theories
+                \item Violation implies quantum nonlocality
+                \item CHSH inequality: $|S| \leq 2$
+            \end{itemize}
+        \end{column}
+        \begin{column}{0.5\textwidth}
+            \begin{figure}
+                \centering
+                \includegraphics[width=\textwidth]{bell_test.png}
+                \caption{Bell test experiment}
+            \end{figure}
+        \end{column}
+    \end{columns}
+    
+    \[
+    S = E(a_1, b_1) - E(a_1, b_3) + E(a_3, b_1) + E(a_3, b_3)
+    \]
+    Quantum prediction: $|S| = 2\sqrt{2} \approx 2.828$
+\end{frame}
+
+% ============ 第二部分：E91协议原理 ============
+\section{E91 Protocol Principles}
+
+\begin{frame}{E91 Protocol Overview (Ekert, 1991)}
+    \begin{columns}
+        \begin{column}{0.6\textwidth}
+            \begin{itemize}
+                \item Uses entangled photon pairs
+                \item Security based on Bell's theorem
+                \item No key information during transmission
+                \item Key "comes into being" after measurement
+            \end{itemize}
+            
+            \vspace{1mm}
+            \textbf{Three measurement bases:}
+            \begin{itemize}
+                \item Alice: a_1=$0^\circ, a_2=45^\circ, a_3=90^\circ$
+                \item Bob: b_1=$45^\circ, b_2=90^\circ, b_3=135^\circ$
+            \end{itemize}
+       \begin{align*}
+E(a_i, b_j) &= P_{++}(a_i, b_j) + P_{--}(a_i, b_j) \\
+&\quad - P_{+-}(a_i, b_j) - P_{-+}(a_i, b_j)
+\end{align*}
+       \[
+    S = E(a_1, b_1) - E(a_1, b_3) + E(a_3, b_1) + E(a_3, b_3)
+    \]
+
+        \end{column}
+        
+        \begin{column}{0.4\textwidth}
+            \begin{figure}
+                \centering
+                \includegraphics[width=\textwidth]{e91_setup.png}
+                \caption{E91 experimental setup}
+            \end{figure}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+\begin{frame}{Protocol Workflow}
+    \begin{enumerate}
+        \item \textbf{Source} emits singlet state pairs: $\frac{|01\rangle - |10\rangle}{\sqrt{2}}$
+        \item \textbf{Alice \& Bob} randomly choose measurement bases
+        \item \textbf{Public discussion} of basis choices
+        \item \textbf{Bell test} using mismatched bases
+        \item \textbf{Key generation} from matched bases
+        \item \textbf{Privacy amplification} \& error correction
+    \end{enumerate}
+    
+    \vspace{5mm}
+    \begin{alertblock}{Security Check}
+        If $|S| > 2$, channel is secure. If $|S| \leq 2$, eavesdropping detected!
+    \end{alertblock}
+\end{frame}
+
+\begin{frame}{Quantum State Preparation}
+    \centering
+    \begin{quantikz}[transparent]
+        \lstick{$\ket{0}$} & \gate{H} & \ctrl{1} & \gate{Z} & \meter{} \\
+        \lstick{$\ket{0}$} & \qw & \targ{} & \gate{X} & \meter{}
+    \end{quantikz}
+    
+    \vspace{5mm}
+    \begin{itemize}
+        \item Initial state: $|00\rangle$
+        \item Apply Hadamard + CNOT + phase flip
+        \item Final singlet state: $\frac{|01\rangle - |10\rangle}{\sqrt{2}}$
+        \item Perfect anticorrelation for same measurement basis
+    \end{itemize}
+    \begin{equation*}
+        E(\mathbf{a}_i, \mathbf{b}_j) = -\mathbf{a}_i \cdot \mathbf{b}_j = -\cos(\theta_a - \theta_b)
+    \end{equation*}
+    
+\end{frame}
+
+% ============ 第三部分：模拟实验设计 ============
+\section{Simulation Design}
+
+\begin{frame}{Python Simulation Framework}
+    \begin{columns}
+        \begin{column}{0.5\textwidth}
+            \textbf{Key Components:}
+            \begin{itemize}
+                \item \texttt{E91Simulator} class
+                \item Qiskit for quantum circuits
+                \item NumPy for numerical calculations
+                \item Matplotlib for visualization
+            \end{itemize}
+            
+            \vspace{3mm}
+            \textbf{Two scenarios:}
+            \begin{enumerate}
+                \item Ideal (no eavesdropping)
+                \item With Eve's intercept-resend attack
+            \end{enumerate}
+        \end{column}
+        
+        \begin{column}{0.5\textwidth}
+            \begin{block}{Simulation Parameters}
+                \begin{itemize}
+                    \item $N = 10,000$ photon pairs
+                    \item Measurement bases as in paper
+                    \item Eve attacks 100\% of transmissions
+                    \item Random seed for reproducibility
+                \end{itemize}
+            \end{block}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+\begin{frame}{Eavesdropper Model}
+    \textbf{Eve's intercept-resend attack:}
+    \begin{enumerate}
+        \item Intercepts photon going to Bob
+        \item Measures in random basis
+        \item Sends new photon to Bob in measured state
+        \item Creates correlations between her results and Bob's
+    \end{enumerate}
+    
+    \vspace{5mm}
+    \begin{block}{Mathematical Description}
+        Eve introduces local hidden variables $\mathbf{n}_a, \mathbf{n}_b$
+        \begin{equation*}
+            S = \int \rho(\mathbf{n}_a,\mathbf{n}_b) [\sqrt{2}\mathbf{n}_a\cdot\mathbf{n}_b] d\mathbf{n}_a d\mathbf{n}_b
+        \end{equation*}
+        This gives $-\sqrt{2} \leq S \leq \sqrt{2} < 2\sqrt{2}$
+    \end{block}
+\end{frame}
+
+% ============ 第四部分：结果与分析 ============
+\section{Results \& Analysis}
+
+\begin{frame}{CHSH Test Results}
+    \begin{table}[h]
+        \centering
+        \begin{tabular}{lccc}
+            \toprule
+            \textbf{Scenario} & \textbf{|S| Value} & \textbf{Quantum Limit?} & \textbf{Secure?} \\
+            \midrule
+            Ideal (no Eve) & 2.798 & Yes ($>2.0$) &  \yes \\
+            With Eve Attack & 1.981 & No ($\leq 2.0$) &  \no \\
+            \bottomrule
+        \end{tabular}
+        \caption{CHSH test results from simulation}
+    \end{table}
+    
+    \vspace{3mm}
+    \begin{columns}
+        \begin{column}{0.5\textwidth}
+            \textbf{Theoretical values:}
+            \begin{itemize}
+                \item Quantum: $|S| = 2\sqrt{2} \approx 2.828$
+                \item Classical: $|S| \leq 2.000$
+                \item Eve attack: $|S| \leq \sqrt{2} \approx 1.414$
+            \end{itemize}
+        \end{column}
+        
+        \begin{column}{0.5\textwidth}
+            \begin{alertblock}{Security Threshold}
+                $|S| > 2$: Secure quantum channel \\
+                $|S| \leq 2$: Possible eavesdropping
+            \end{alertblock}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+\begin{frame}{Correlation Coefficients Comparison}
+    \begin{figure}[h]
+        \centering
+        \includegraphics[width=0.8\textwidth]{correlation_plot.png}
+        \caption{Correlation coefficients for different basis combinations}
+    \end{figure}
+    
+    \begin{itemize}
+        \item Perfect anticorrelation for matched bases: $E = -1$
+        \item Quantum predictions closely matched in ideal case
+        \item Eve's attack reduces correlation strength
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Key Generation \& QBER Analysis}
+    \begin{columns}
+        \begin{column}{0.6\textwidth}
+            \begin{table}[h]
+                \centering
+                \begin{tabular}{lcc}
+                    \toprule
+                    \textbf{Metric} & \textbf{Ideal} & \textbf{With Eve} \\
+                    \midrule
+                    Key bits available & 3,457 & 3,482 \\
+                    Error bits & 12 & 867 \\
+                    QBER & 0.35\% & 24.9\% \\
+                    Key rate (bits/pair) & 0.35 & 0.35 \\
+                    \bottomrule
+                \end{tabular}
+                \caption{Key generation performance}
+            \end{table}
+        \end{column}
+        
+        \begin{column}{0.4\textwidth}
+            \begin{block}{QBER Threshold}
+                Typical QBER limits:
+                \begin{itemize}
+                    \item BB84: $\sim 11\%$
+                    \item E91: $\sim 14.6\%$
+                    \item Our simulation: $24.9\%$ (Eve)
+                \end{itemize}
+            \end{block}
+        \end{column}
+    \end{columns}
+    
+    \vspace{3mm}
+    \begin{alertblock}{Important Observation}
+        Eve's attack increases QBER dramatically while keeping key rate similar
+    \end{alertblock}
+\end{frame}
+
+% 合并后的单个frame（替代原来的2个frame）
+\begin{frame}{Visualization of Results}
+    % 1. 图片部分（调整宽度留出下方空间）
+    \begin{figure}
+        \centering
+        % 宽度设为0.8\textwidth（比原来稍小，给列表留空间）
+        \includegraphics[width=0.6\textwidth]{simulation_results.png}
+        \caption{Complete simulation results visualization}
+    \end{figure}
+    
+    \begin{enumerate}
+        \item CHSH value comparison with theoretical limits
+        \item Correlation coefficients for all basis combinations
+        \item Available key bits count
+        \item Quantum Bit Error Rate (QBER)
+    \end{enumerate}
+\end{frame}
+
+% ============ 第五部分：讨论 ============
+\section{Discussion}
+
+\begin{frame}{Security Analysis}
+    \textbf{Why E91 is secure:}
+    \begin{itemize}
+        \item No information in transit (delayed measurement principle)
+        \item Bell test detects any eavesdropping
+        \item Information "comes into being" only after public discussion
+        \item No cloning theorem prevents copying of quantum states
+    \end{itemize}
+    
+    \vspace{5mm}
+    \textbf{Limitations in our simulation:}
+    \begin{itemize}
+        \item Simplified eavesdropper model
+        \item No channel noise considered
+        \item Perfect detection efficiency assumed
+        \item Finite statistics effects
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Comparison with BB84 Protocol}
+    \begin{table}[h]
+        \centering
+        \begin{tabular}{lcc}
+            \toprule
+            \textbf{Feature} & \textbf{E91} & \textbf{BB84} \\
+            \midrule
+            Quantum resource & Entanglement & Single photons \\
+            Security basis & Bell's theorem & No-cloning theorem \\
+            Key extraction & From correlations & From bases matching \\
+            Eavesdropping test & Statistical (CHSH) & Direct (QBER) \\
+            Implementation complexity & Higher & Lower \\
+            Experimental realization & More challenging & Well-established \\
+            \bottomrule
+        \end{tabular}
+        \caption{E91 vs BB84 protocol comparison}
+    \end{table}
+    
+    \vspace{3mm}
+    \begin{block}{Advantage of E91}
+        Provides device-independent security certification through Bell test
+    \end{block}
+\end{frame}
+
+% ============ 第六部分：结论与展望 ============
+\section{Conclusion \& Future Work}
+
+\begin{frame}{Conclusion}
+    \begin{itemize}
+        \item \textbf{Successfully simulated} E91 quantum cryptography protocol
+        \item \textbf{Verified} security based on Bell's theorem violation
+        \item \textbf{Demonstrated} eavesdropping detection through CHSH test
+        \item \textbf{Showed} practical key generation from quantum correlations
+    \end{itemize}
+    
+    \vspace{5mm}
+    \begin{block}{Key Findings}
+        \begin{enumerate}
+            \item Ideal case: $|S| = 2.798 > 2$ (secure)
+            \item With Eve: $|S| = 1.981 \leq 2$ (insecure)
+            \item QBER increases from 0.35\% to 24.9\% with eavesdropping
+            \item Protocol successfully detects intercept-resend attacks
+        \end{enumerate}
+    \end{block}
+\end{frame}
+
+\begin{frame}{Future Work}
+    \begin{columns}
+        \begin{column}{0.5\textwidth}
+            \textbf{Simulation improvements:}
+            \begin{itemize}
+                \item More realistic channel models
+                \item Advanced eavesdropping strategies
+                \item Finite-key analysis
+                \item Device-independent aspects
+            \end{itemize}
+        \end{column}
+        
+        \begin{column}{0.5\textwidth}
+            \textbf{Experimental directions:}
+            \begin{itemize}
+                \item Photon source optimization
+                \item Detection efficiency improvements
+                \item Real-time processing implementation
+                \item Field deployment considerations
+            \end{itemize}
+        \end{column}
+    \end{columns}
+    
+    \vspace{5mm}
+    \begin{block}{Long-term Vision}
+        \vspace{1mm}
+        Towards practical device-independent quantum key distribution networks
+    \end{block}
+\end{frame}
+
+
+
+\begin{frame}{}
+    \centering
+    \vspace{1cm}
+    
+    \Huge Thank You!
+    
+    \vspace{1cm}
+    
+    \large Questions \& Discussion
+    
+    \vspace{1.5cm}
+    
+    \normalsize
+    Zhao Yumu \\
+    School of Physical Science and Technology \\
+    ShanghaiTech University \\
+    \texttt{zhaoym2023@shanghaitech.edu.cn}
+    
+    \vspace{0.5cm}
+    
+    \footnotesize
+    Code available at: \url{https://github.com/zhaomumu666/e91-simulation.git}
+\end{frame}
+
+% ============ 附录（可选） ============
+\appendix
+
+\begin{frame}{Appendix: Simulation Code Structure}
+    \begin{columns}[T] % T: 分栏顶部对齐
+        % 左栏：Key functions
+        \column{0.5\textwidth}
+        \textbf{Key functions:}
+        \begin{itemize}
+            \item \texttt{simulate\_ideal\_scenario()}
+            \item \texttt{simulate\_eavesdropping\_scenario()}
+            \item \texttt{calculate\_correlation()}
+            \item \texttt{visualize\_results()}
+            \item \texttt{main()} for execution
+        \end{itemize}
+
+        % 右栏：Main components
+        \column{0.5\textwidth}
+        \textbf{Main components:}
+        \begin{itemize}
+            \item \texttt{E91Simulator} class
+            \item Quantum state preparation
+            \item Measurement simulation
+            \item Correlation calculation
+            \item CHSH test implementation
+            \item Visualization functions
+        \end{itemize}
+    \end{columns}
+
+    % 中间加适度间距，分隔分栏与Technical Details
+    \vspace{4mm}
+
+    % 优化Technical Details的块样式，避免拥挤
+    \begin{block}{Technical Details}
+        \begin{itemize}
+            \item Python 3.8+, Qiskit 0.45+
+            \item 10,000 photon pairs simulated
+            \item Reproducible random seeds
+            \item Modular design for easy extension
+        \end{itemize}
+    \end{block}
+    \end{frame}
+\end{document}

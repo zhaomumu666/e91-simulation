@@ -1,0 +1,52 @@
+% 先加载依赖包
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows, positioning}
+
+% 流程图代码（可直接插入Beamer帧或文档中）
+\begin{frame}{E91 Protocol Workflow (Corresponding to the Setup)}
+\begin{center}
+\begin{tikzpicture}[
+    % 节点样式定义
+    block/.style={rectangle, draw, fill=blue!10, minimum width=3cm, minimum height=1cm, align=center},
+    device/.style={rectangle, draw, fill=gray!20, minimum width=2.5cm, minimum height=1cm, align=center},
+    arrow/.style={thick,->,>=stealth}
+]
+    % 1. 纠缠源生成
+    \node[block] (source) {1. Generate Entangled Photon Pairs};
+    \node[device, below=0.5cm of source] (S) {Device: Entangler \( \text{S} \)};
+
+    % 2. 分发光子对到Alice/Bob
+    \node[block, right=4cm of source] (distribute) {2. Distribute Pairs to Alice/Bob};
+    \node[device, below=0.5cm of distribute] (paths) {Device: Paths ①/②};
+
+    % 3. 基矢选择
+    \node[block, right=4cm of distribute] (basis) {3. Choose Measurement Bases};
+    \node[device, below=0.5cm of basis] (PBS) {Device: \( \text{PBS1 (} \vec{a}\text{)}, \text{PBS2 (} \vec{b}\text{)} \)};
+
+    % 4. 本地测量
+    \node[block, below=2cm of source] (measure) {4. Local Measurement};
+    \node[device, below=0.5cm of measure] (detectors) {Device: \( \text{D}_1(0/1), \text{D}_2(0/1) \)};
+
+    % 5. 公开基矢信息
+    \node[block, right=4cm of measure] (publish) {5. Publish Chosen Bases};
+
+    % 6. 筛选基矢匹配的数据
+    \node[block, right=4cm of publish] (filter) {6. Filter Data (Same Bases)};
+
+    % 7. Bell不等式验证（窃听检测）
+    \node[block, below=2cm of measure] (bell) {7. Verify Bell's Inequality (Eavesdrop Check)};
+
+    % 8. 生成共享密钥
+    \node[block, right=4cm of bell] (key) {8. Generate Shared Secret Key};
+
+    % 绘制箭头
+    \draw[arrow] (source) -- (distribute);
+    \draw[arrow] (distribute) -- (basis);
+    \draw[arrow] (basis) -- (measure);
+    \draw[arrow] (measure) -- (publish);
+    \draw[arrow] (publish) -- (filter);
+    \draw[arrow] (filter) -- (bell);
+    \draw[arrow] (bell) -- (key);
+\end{tikzpicture}
+\end{center}
+\end{frame}
